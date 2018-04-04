@@ -40,16 +40,25 @@ function Book() {
       var ex;
       var cx;
       var clm = 0;
+      
+      var uEX;
+      var uIX;
+      
       if (type == "sell") {
         /*directionArr = price ? parent.bids.each(function(x) {
           return x.price >= price : parent.bids;
         });
         */
         directionArr = parent.bids;
-        ix = 0;
-        parent.bids.forEach(function(e, i) { 
-          if(e.price >= price) ex = i;
-        });
+        uIX = function() { ix = 0; };
+        uEX = function() {
+          if(ix != undefined) ex = undefined;          
+          parent.bids.forEach(function(e, i) { 
+            if(e.price >= price) ex = i;
+          });
+        };  
+        uIX();
+        uEX();
       } else if (type == "buy") {
         /*
         directionArr = price ? parent.asks.each(function(x) {
@@ -57,10 +66,18 @@ function Book() {
         }) : parent.asks;
         */
         directionArr = parent.asks;
-        parent.asks.forEach(function(e, i){ 
-          if(e.price <= price) ix = i;
-        });
-        ex = parent.asks.length - 1;
+        uIX = function() {
+          if(ix != undefined) ix = undefined;
+          parent.asks.forEach(function(e, i){ 
+            if(e.price <= price) ix = i;
+          });
+        };
+        uEX = function() {
+          ex = parent.asks.length - 1;
+        };
+        
+        uIX();
+        uEX();
       }
       
       if (ex < ix) {
@@ -92,27 +109,31 @@ function Book() {
         //for the current bid, do I have enougah size?
         //200 >= 220
         var ixs = 0;
-        while(clm < size && (ixs >= 0 && ixs < directionArr[ix].collection.length)){
+        while(clm < size && (ixs >= 0 && ixs < directionArr[cx].collection.length)){
           //0 + 200 <= 200
           //0 + 200 <= 220;
           
           //(2): 200 + 200 <= 220
           // 200+220sg
           //
-          if(clm + directionArr[ix].collection[ixs] <= size) {         
-            clm += directionArr[ix].collection[ixs];
-            directionArr[ix].collection.splice(ixs, 1);   
+          if(clm + directionArr[cx].collection[ixs] <= size) {         
+            clm += directionArr[cx].collection[ixs];
+            directionArr[cx].collection.splice(ixs, 1);   
           } else {        
             var diff = size - clm;
             clm += diff;
-            directionArr[ix].collection[ixs] -= diff;
+            directionArr[cx].collection[ixs] -= diff;
           } 
           ixs++;
         }
-        if(directionArr[ix].collection.length == 0) {
-          directionArr.splice(ix, 1);
+        if(directionArr[cx].collection.length == 0) {
+          directionArr.splice(cx, 1);
+          uIX();
+          uEX(); 
+          cx = ix;
+        } else{
+          cx++;
         }
-       cx++;
       }     
       parent.onChange(price);
       
@@ -214,6 +235,10 @@ b.place("sell", 10.18, 500);
 b.place("buy", 10.18, 550);
 
 //10.18 ask should be gone, with 10.18 250 on the bid
+
+b.place("sell", 2.00, 10000);
+
+//all bids gone
 
 //10.2 +200 a
 //10.18 -500, ==> 10:18 -300
