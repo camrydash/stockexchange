@@ -236,7 +236,11 @@ b.place("buy", 10.18, 550);
 
 //10.18 ask should be gone, with 10.18 250 on the bid
 
+//simulating a hedge fund dumping 10,000 shares @ market
 b.place("sell", 2.00, 10000);
+//the idea is that price wont fall below a bid where hedge fund are trying to get in. the price will go up from there.
+//on a chart, this will form support
+// next featurs: adding limit orders, stop orders
 
 //all bids gone
 
